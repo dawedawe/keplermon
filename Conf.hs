@@ -2,6 +2,8 @@ module Conf
 ( Conf (..)
 , Options (..)
 , buildConf
+, checkConfItem
+, getConfItems
 , parseArgv
 ) where
 
@@ -34,7 +36,7 @@ defaultOptions :: Options
 defaultOptions = Options
 	{ optVerbose	= False
 	, optConfigPath = "./.keplermon.conf"
-	, optDataPath	= "./data"
+	, optDataPath	= "./.keplermon.data"
 	, optPrint	= False
 	}
 
@@ -89,3 +91,4 @@ getProxyConf items = do
 checkConfItem :: Maybe String -> String -> String
 checkConfItem (Just s) _ = s
 checkConfItem Nothing itemName = error $ "failed to parse " ++ itemName
+
