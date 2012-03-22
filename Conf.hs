@@ -2,7 +2,7 @@ module Conf
 ( Conf (..)
 , Options (..)
 , buildConf
-, checkConfItem
+, lookupConfItem
 , getConfItems
 , parseArgv
 ) where
@@ -58,11 +58,9 @@ buildConf :: Options -> IO Conf
 buildConf o = do
 	items    <- getConfItems $ optConfigPath o
 	let prx  = getProxyConf items
-	let url  = lookup "url" items
-	let url' = checkConfItem url "url"
-	let dat  = lookup "datapath" items
-	let dat' = checkConfItem dat "datapath"
-	return $ Conf o url' dat' prx
+	let url  = lookupConfItem "url" items
+	let dat  = lookupConfItem "datapath" items
+	return $ Conf o url dat prx
 
 getConfItems :: FilePath -> IO [(CF.OptionSpec, String)]
 getConfItems path = do
@@ -77,6 +75,11 @@ getProxyConf items = do
 	  maybeToProxy :: Maybe String -> Proxy
 	  maybeToProxy Nothing  = NoProxy
 	  maybeToProxy (Just s) = Proxy s Nothing
+
+lookupConfItem :: String -> [(CF.OptionSpec, String)] -> String
+lookupConfItem itemName items = 
+	let value = lookup itemName items in
+	checkConfItem value itemName
 
 checkConfItem :: Maybe String -> String -> String
 checkConfItem (Just s) _ = s

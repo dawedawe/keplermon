@@ -87,13 +87,10 @@ writeCurrentCounts path (cp, pc, ebs) = writeFile path countString
 readOldCounts :: FilePath -> IO AstroCounts
 readOldCounts path = do
 	countItems <- getConfItems $ path
-	let c  = lookup "confirmed_planets" countItems
-	let c' = read $ checkConfItem c "confirmed_planets"
-	let p  = lookup "planet_candidates" countItems
-	let p' = read $ checkConfItem p "planet_candidates"
-	let e  = lookup "eclipsing_binary_stars" countItems
-	let e' = read $ checkConfItem e "eclipsing_binary_stars"
-	return (c', p', e')
+	let c  = read $ lookupConfItem "confirmed_planets" countItems
+	let p  = read $ lookupConfItem "planet_candidates" countItems
+	let e  = read $ lookupConfItem "eclipsing_binary_stars" countItems
+	return (c, p, e)
 
 filterComma :: String -> String
 filterComma = filter (\c -> c /= ',')
