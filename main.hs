@@ -14,7 +14,5 @@ main = do
 	  else return ()
 
 	conf <- buildConf parsedOptions
-	if (optPrint $ opts $ conf)
-	  then getAndPrintCounts conf
-	  else return ()
+	getAndPrintCounts conf
 

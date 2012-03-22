@@ -14,30 +14,25 @@ import System.Console.GetOpt
 
 data Conf = Conf
 	{ opts		:: Options
-	, proxy		:: Proxy
 	, dataUrl	:: String
+	, dataPath	:: FilePath
+	, proxy		:: Proxy
 	}
 
 data Options = Options
 	{ optVerbose	:: Bool
 	, optConfigPath	:: FilePath
-	, optDataPath	:: FilePath
-	, optPrint	:: Bool
 	}
 
 instance Show Options where
 	show o =
 	  "-v " ++ (show $ optVerbose o) ++ "\n" ++
-	  "-C " ++ (optConfigPath o) ++ "\n" ++
-	  "-d " ++ (optDataPath o) ++ "\n" ++
-	  "-p " ++ (show $ optPrint o) ++ "\n"
+	  "-C " ++ (optConfigPath o)
 
 defaultOptions :: Options
 defaultOptions = Options
 	{ optVerbose	= False
 	, optConfigPath = "./.keplermon.conf"
-	, optDataPath	= "./.keplermon.data"
-	, optPrint	= False
 	}
 
 options :: [OptDescr (Options -> Options)]
@@ -48,12 +43,6 @@ options =
 	, Option ['C'] ["config"]
 	  (ReqArg (\p optns -> optns {optConfigPath = p }) "PATH")
 	  "filepath to config"
-	, Option ['d'] ["datapath"]
-	  (ReqArg (\p optns -> optns { optDataPath = p }) "PATH")
-	  "filepath to datafile"
-	, Option ['p'] ["print"]
-	  (NoArg (\optns -> optns { optPrint = True }))
-	  "print kepler planet count"
 	]
 
 parseArgv :: [String] -> IO (Options, [String]) 
@@ -63,8 +52,7 @@ parseArgv argv =
 	  (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
 	  (_,_,errs) -> ioError
 	    (userError (concat errs ++ usageInfo header options))
-      	where header = "Usage: keplermon [-v] [-C configpath] " ++
-	        "[-d datapath]"
+      	where header = "Usage: keplermon [-v] [-C configpath]"
 
 buildConf :: Options -> IO Conf
 buildConf o = do
@@ -72,7 +60,9 @@ buildConf o = do
 	let prx  = getProxyConf items
 	let url  = lookup "url" items
 	let url' = checkConfItem url "url"
-	return $ Conf o prx url'
+	let dat  = lookup "datapath" items
+	let dat' = checkConfItem dat "datapath"
+	return $ Conf o url' dat' prx
 
 getConfItems :: FilePath -> IO [(CF.OptionSpec, String)]
 getConfItems path = do

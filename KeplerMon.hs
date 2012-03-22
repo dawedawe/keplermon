@@ -17,17 +17,17 @@ type AstroCounts = (ConfirmedPlanets, PlanetCandidates, EclipsingBiStars)
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
+	oldCounts <- readOldCounts $ dataPath conf
 	curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
-	initDataFileIfNeeded (optDataPath $ opts conf) curCounts
-	oldCounts <- readOldCounts $ optDataPath $ opts conf
+	initDataFileIfNeeded (dataPath conf) curCounts
 	let diffs = diffOldNewCounts oldCounts curCounts
 	let info = appDiffsToCounts curCounts diffs
 	let disp = buildDisplayStrings info
 	mapM_ putStrLn disp 
+	writeCurrentCounts (dataPath conf) curCounts
 
 buildDisplayStrings :: [String] -> [String]
-buildDisplayStrings s =
-	[cp, pc, ebs]
+buildDisplayStrings s = [cp, pc, ebs]
 	where
 	  cp  = "Confirmed Planets:      " ++ s !! 0
 	  pc  = "Planet Candidates:      " ++ s !! 1
@@ -43,12 +43,11 @@ appDiffsToCounts (cp, pc, ebs) diffs =
 
 diffOldNewCounts :: AstroCounts -> AstroCounts -> [String]
 diffOldNewCounts (o_cp, o_pc, o_ebs) (n_cp, n_pc, n_ebs) =
-	map enrichDiff diffs
+	map enrichDiff [cpdiff, pcdiff, ebsdiff]
 	where
 	  cpdiff  = n_cp - o_cp
 	  pcdiff  = n_pc - o_pc
 	  ebsdiff = n_ebs - o_ebs
-	  diffs   = [cpdiff, pcdiff, ebsdiff]
 
 enrichDiff :: Int -> String
 enrichDiff n | (n < 0)   = "(" ++ show n ++ ")"
