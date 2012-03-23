@@ -10,10 +10,11 @@ import Text.HTML.TagSoup
 
 import Conf
 
-type ConfirmedPlanets = Int
-type PlanetCandidates = Int
-type EclipsingBiStars = Int
-type AstroCounts = (ConfirmedPlanets, PlanetCandidates, EclipsingBiStars)
+data AstroCounts = AstroCounts
+	{ confirmedPlanets :: Int
+	, planetCandidates :: Int
+	, eclipsingBiStars :: Int
+	}
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
@@ -27,27 +28,30 @@ getAndPrintCounts conf = do
 	writeCurrentCounts (dataPath conf) curCounts
 
 buildDisplayStrings :: [String] -> [String]
-buildDisplayStrings s = [cp, pc, ebs]
+buildDisplayStrings [countdiff0, countdiff1, countdiff2] =
+	[cp, pc, ebs]
 	where
-	  cp  = "Confirmed Planets:      " ++ s !! 0
-	  pc  = "Planet Candidates:      " ++ s !! 1
-	  ebs = "Eclipsing Binary Stars: " ++ s !! 2
+	cp  = "Confirmed Planets:      " ++ countdiff0
+	pc  = "Planet Candidates:      " ++ countdiff1
+	ebs = "Eclipsing Binary Stars: " ++ countdiff2
+buildDisplayStrings _ = error "undefined arguments for buildDisplayStrings"
 
 appDiffsToCounts :: AstroCounts -> [String] -> [String]
-appDiffsToCounts (cp, pc, ebs) diffs =
+appDiffsToCounts ac [d0, d1, d2] =
 	[cpinfo, pcinfo, ebsinfo]
 	where
-	  cpinfo  = show cp ++ "\t" ++ (diffs !! 0)
-	  pcinfo  = show pc ++ "\t" ++ (diffs !! 1)
-	  ebsinfo = show ebs ++ "\t" ++ (diffs !! 2)
+	cpinfo  = show (confirmedPlanets ac) ++ "\t" ++ d0
+	pcinfo  = show (planetCandidates ac) ++ "\t" ++ d1
+	ebsinfo = show (eclipsingBiStars ac) ++ "\t" ++ d2
+appDiffsToCounts _ _ = error "undefined arguments for appDiffsToCounts"
 
 diffOldNewCounts :: AstroCounts -> AstroCounts -> [String]
-diffOldNewCounts (o_cp, o_pc, o_ebs) (n_cp, n_pc, n_ebs) =
+diffOldNewCounts old new =
 	map enrichDiff [cpdiff, pcdiff, ebsdiff]
 	where
-	  cpdiff  = n_cp - o_cp
-	  pcdiff  = n_pc - o_pc
-	  ebsdiff = n_ebs - o_ebs
+	cpdiff  = confirmedPlanets new - confirmedPlanets old
+	pcdiff  = planetCandidates new - planetCandidates old
+	ebsdiff = eclipsingBiStars new - eclipsingBiStars old
 
 enrichDiff :: Int -> String
 enrichDiff n | (n < 0)   = "(" ++ show n ++ ")"
@@ -60,7 +64,7 @@ getCurrentCounts prox url = do
 	let confPlanets = read $ filterComma $ fromTagText (counts !! 0 !! 3)
 	let planCandits = read $ filterComma $ fromTagText (counts !! 0 !! 9)
 	let eclipBiStars = read $ filterComma $ fromTagText (counts !! 0 !! 15)
-	return (confPlanets, planCandits, eclipBiStars)
+	return (AstroCounts confPlanets planCandits eclipBiStars)
 
 getPage :: Proxy -> String -> IO String
 getPage prox url = do
@@ -78,19 +82,21 @@ initDataFileIfNeeded path counts = do
 	  else return ()
 
 writeCurrentCounts :: FilePath -> AstroCounts -> IO ()
-writeCurrentCounts path (cp, pc, ebs) = writeFile path countString 
-	where countString = 
-		"confirmed_planets = " ++ (show  cp) ++ "\n" ++
-		"planet_candidates = " ++ (show  pc) ++ "\n" ++
-		"eclipsing_binary_stars = " ++ (show ebs) ++ "\n"
+writeCurrentCounts path (AstroCounts cp pc ebs) =
+	writeFile path countString
+	where
+	countString = 
+	  "confirmed_planets = " ++ (show  cp) ++ "\n" ++
+	  "planet_candidates = " ++ (show  pc) ++ "\n" ++
+	  "eclipsing_binary_stars = " ++ (show ebs) ++ "\n"
 
 readOldCounts :: FilePath -> IO AstroCounts
 readOldCounts path = do
 	countItems <- getConfItems $ path
-	let c  = read $ lookupConfItem "confirmed_planets" countItems
-	let p  = read $ lookupConfItem "planet_candidates" countItems
-	let e  = read $ lookupConfItem "eclipsing_binary_stars" countItems
-	return (c, p, e)
+	let c = read $ lookupConfItem "confirmed_planets" countItems
+	let p = read $ lookupConfItem "planet_candidates" countItems
+	let e = read $ lookupConfItem "eclipsing_binary_stars" countItems
+	return (AstroCounts c p e)
 
 filterComma :: String -> String
 filterComma = filter (\c -> c /= ',')

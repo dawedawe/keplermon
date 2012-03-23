@@ -72,9 +72,9 @@ getProxyConf :: [(CF.OptionSpec, String)] -> Proxy
 getProxyConf items = do
 	maybeToProxy $ lookup "proxy" items
 	where
-	  maybeToProxy :: Maybe String -> Proxy
-	  maybeToProxy Nothing  = NoProxy
-	  maybeToProxy (Just s) = Proxy s Nothing
+	maybeToProxy :: Maybe String -> Proxy
+	maybeToProxy Nothing  = NoProxy
+	maybeToProxy (Just s) = Proxy s Nothing
 
 lookupConfItem :: String -> [(CF.OptionSpec, String)] -> String
 lookupConfItem itemName items = 
