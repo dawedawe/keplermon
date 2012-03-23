@@ -17,9 +17,9 @@ data AstroCounts = AstroCounts
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
-	oldCounts <- readOldCounts $ dataPath conf
 	curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
 	initDataFileIfNeeded (dataPath conf) curCounts
+	oldCounts <- readOldCounts $ dataPath conf
 	let diffs = diffOldNewCounts oldCounts curCounts
 	let info = appDiffsToCounts curCounts diffs
 	let disp = buildDisplayStrings info
