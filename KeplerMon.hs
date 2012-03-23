@@ -1,6 +1,5 @@
 module KeplerMon
 ( getAndPrintCounts
-, AstroCounts
 ) where
 
 import System.Directory (doesFileExist)
