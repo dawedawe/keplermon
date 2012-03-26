@@ -36,13 +36,11 @@ buildDisplayStrings [countdiff0, countdiff1, countdiff2] =
 buildDisplayStrings _ = error "undefined arguments for buildDisplayStrings"
 
 appDiffsToCounts :: AstroCounts -> [String] -> [String]
-appDiffsToCounts ac [d0, d1, d2] =
-	[cpinfo, pcinfo, ebsinfo]
+appDiffsToCounts (AstroCounts cp pc ebs) diffs =
+	zipWith helper [show cp, show pc, show ebs] diffs
 	where
-	cpinfo  = show (confirmedPlanets ac) ++ "\t" ++ d0
-	pcinfo  = show (planetCandidates ac) ++ "\t" ++ d1
-	ebsinfo = show (eclipsingBiStars ac) ++ "\t" ++ d2
-appDiffsToCounts _ _ = error "undefined arguments for appDiffsToCounts"
+	helper :: String -> String -> String
+	helper x y = x ++ "\t" ++ y
 
 diffOldNewCounts :: AstroCounts -> AstroCounts -> [String]
 diffOldNewCounts old new =
