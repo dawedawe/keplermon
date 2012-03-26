@@ -5,6 +5,7 @@ module KeplerMon
 import System.Directory (doesFileExist)
 import Network.HTTP
 import Network.Browser
+import System.Time (getClockTime)
 import Text.HTML.TagSoup
 
 import Conf
@@ -79,13 +80,14 @@ initDataFileIfNeeded path counts = do
 	  else return ()
 
 writeCurrentCounts :: FilePath -> AstroCounts -> IO ()
-writeCurrentCounts path (AstroCounts cp pc ebs) =
+writeCurrentCounts path (AstroCounts cp pc ebs) = do
+	timestamp <- getClockTime
+	let countString =
+	     "timestamp = " ++ (show timestamp) ++ "\n" ++
+	     "confirmed_planets = " ++ (show  cp) ++ "\n" ++
+	     "planet_candidates = " ++ (show  pc) ++ "\n" ++
+	     "eclipsing_binary_stars = " ++ (show ebs) ++ "\n"
 	writeFile path countString
-	where
-	countString = 
-	  "confirmed_planets = " ++ (show  cp) ++ "\n" ++
-	  "planet_candidates = " ++ (show  pc) ++ "\n" ++
-	  "eclipsing_binary_stars = " ++ (show ebs) ++ "\n"
 
 readOldCounts :: FilePath -> IO AstroCounts
 readOldCounts path = do
