@@ -1,3 +1,4 @@
+import Control.Monad (when)
 import System.Environment
 import System.Console.GetOpt()
 
@@ -6,13 +7,10 @@ import Conf
 
 main :: IO ()
 main = do
-	parsedArgv <- (getArgs >>= parseArgv)
+	parsedArgv <- getArgs >>= parseArgv
 	let parsedOptions = fst parsedArgv
 
-	if (optVerbose parsedOptions)
-	  then putStrLn $ show parsedOptions
-	  else return ()
-
+	when (optVerbose parsedOptions) (print parsedOptions)
 	conf <- buildConf parsedOptions
 	getAndPrintCounts conf
 
