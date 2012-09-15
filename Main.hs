@@ -1,3 +1,5 @@
+module Main where
+
 import Control.Monad (when)
 import System.Environment
 import System.Console.GetOpt()
