@@ -1,18 +1,17 @@
 module Main where
 
 import Control.Monad (when)
-import System.Environment
-import System.Console.GetOpt()
+import System.Environment (getArgs)
 
 import KeplerMon
 import Conf
 
 main :: IO ()
 main = do
-	parsedArgv <- getArgs >>= parseArgv
-	let parsedOptions = fst parsedArgv
-
-	when (optVerbose parsedOptions) (print parsedOptions)
-	conf <- buildConf parsedOptions
-	getAndPrintCounts conf
+    parsedArgv <- getArgs >>= parseArgv
+    let parsedOptions = fst parsedArgv
+    createDotDir
+    when (optVerbose parsedOptions) (print parsedOptions)
+    conf <- buildConf parsedOptions
+    getAndPrintCounts conf
 
