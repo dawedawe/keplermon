@@ -12,6 +12,7 @@ import Data.Either.Utils (forceEither)
 import Network.Browser
 import System.Console.GetOpt
 import System.Directory (getAppUserDataDirectory)
+import System.FilePath (pathSeparator)
 
 data Conf = Conf {
             opts        :: Options
@@ -34,8 +35,8 @@ instance Show Options where
 defaultOptions :: FilePath -> Options
 defaultOptions p = Options {
       optVerbose    = False
-    , optConfigPath = p ++ "/keplermon.conf"
-    , optDataPath   = p ++ "/keplermon.data"
+    , optConfigPath = p ++ [pathSeparator] ++ "keplermon.conf"
+    , optDataPath   = p ++ [pathSeparator] ++ "keplermon.data"
     }
 
 options :: [OptDescr (Options -> Options)]
