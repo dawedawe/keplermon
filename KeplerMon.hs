@@ -12,11 +12,11 @@ import Text.HTML.TagSoup
 import Conf
 
 data AstroCounts = AstroCounts {
-      timeStamp         :: UTCTime
-    , confirmedPlanets  :: Int
-    , planetCandidates  :: Int
-    , eclipsingBiStars  :: Int
-    }
+                   timeStamp        :: UTCTime
+                 , confirmedPlanets :: Int
+                 , planetCandidates :: Int
+                 , eclipsingBiStars :: Int
+                 }
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
@@ -39,8 +39,8 @@ buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
 buildDisplayString _ _ = error "undefined arguments for buildDisplayString"
 
 appDiffsToCounts :: AstroCounts -> [String] -> [String]
-appDiffsToCounts (AstroCounts _ cp pc ebs) diffs =
-    zipWith helper [show cp, show pc, show ebs] diffs
+appDiffsToCounts (AstroCounts _ cp pc ebs) =
+    zipWith helper [show cp, show pc, show ebs]
     where
       helper :: String -> String -> String
       helper x y = x ++ "\t" ++ y
