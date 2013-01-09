@@ -20,26 +20,24 @@ import System.FilePath (pathSeparator)
 data Conf = Conf {
             opts        :: Options
           , dataUrl     :: String
+          , dataPath    :: FilePath
           , proxy       :: Proxy
           }
 
 data Options = Options {
                optVerbose       :: Bool
              , optConfigPath    :: FilePath
-             , optDataPath      :: FilePath
              }
 
 instance Show Options where
     show o =
       "-v " ++ show (optVerbose o) ++ "\n" ++
-      "-C " ++ optConfigPath o ++ "\n" ++
-      "-d " ++ optDataPath o
+      "-C " ++ optConfigPath o
 
 defaultOptions :: FilePath -> Options
 defaultOptions p = Options {
       optVerbose    = False
     , optConfigPath = p ++ [pathSeparator] ++ "keplermon.conf"
-    , optDataPath   = p ++ [pathSeparator] ++ "keplermon.data"
     }
 
 options :: [OptDescr (Options -> Options)]
@@ -50,16 +48,13 @@ options = [
     , Option "C" ["config"]
       (ReqArg (\p optns -> optns {optConfigPath = p }) "PATH")
       "filepath to config"
-    , Option "d" ["data"]
-      (ReqArg (\p optns -> optns {optDataPath = p }) "PATH")
-      "filepath to data"
     ]
 
 parseArgv :: [String] -> IO (Options, [String]) 
 parseArgv argv = do
     dDir       <- dotDirPath
     let opt    = getOpt RequireOrder options argv
-    let header = "Usage: keplermon [-v] [-C configpath] [-d datapath]"
+    let header = "Usage: keplermon [-v] [-C configpath]"
     case opt of
           (o,n,[]  ) -> return (foldl (flip id) (defaultOptions dDir) o, n)
           (_,_,errs) -> ioError
@@ -67,10 +62,11 @@ parseArgv argv = do
 
 buildConf :: Options -> IO Conf
 buildConf o = do
-    items    <- getConfItems $ optConfigPath o
-    let prx  = getProxyConf items
-    let url  = lookupConfItem "url" items
-    return $ Conf o url prx
+    items     <- getConfItems $ optConfigPath o
+    let prx   = getProxyConf items
+    let url   = lookupConfItem "url" items
+    let dPath = lookupConfItem "datapath" items
+    return $ Conf o url dPath prx
 
 getConfItems :: FilePath -> IO [(CF.OptionSpec, String)]
 getConfItems path = do
@@ -101,14 +97,14 @@ createDotDir = do
     exists <- doesDirectoryExist dDir
     createDirectoryIfMissing (not exists) dDir
     let cPath = dDir ++ [pathSeparator] ++ "keplermon.conf"
-    unless exists $ writeFile cPath defaultConf
+    unless exists $ writeFile cPath (defaultConf dDir)
 
 -- default path to application data directory aka the dotdir
 dotDirPath :: IO String
 dotDirPath = getAppUserDataDirectory "keplermon"
 
-defaultConf :: String
-defaultConf =
+defaultConf :: FilePath -> String
+defaultConf dDir =
     "url = http://www.nasa.gov/mission_pages/kepler/main/index.html\n" ++
-    "# proxy = 127.0.0.1:8118\n" ++
-    "# datapath = .keplermon.data"
+    "datapath = " ++ dDir ++ [pathSeparator]  ++ "keplermon.data\n" ++
+    "# proxy = 127.0.0.1:8118"

@@ -20,7 +20,7 @@ data AstroCounts = AstroCounts {
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
-    let dPath = optDataPath (opts conf)
+    let dPath = dataPath conf
     curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
     initDataFileIfNeeded dPath curCounts
     oldCounts <- readOldCounts dPath
@@ -63,7 +63,7 @@ getCurrentCounts :: Proxy -> String -> IO AstroCounts
 getCurrentCounts prox url = do
     tags   <- fmap parseTags $ getPage prox url
     tstamp <- getCurrentTime
-    let counts = partitions (~== "<div id=\"ullitags\"") tags
+    let counts       = partitions (~== "<div id=\"ullitags\"") tags
     let confPlanets  = read $ filterComma (fromTagText (head counts !! 3))
     let planCandits  = read $ filterComma (fromTagText (head counts !! 9))
     let eclipBiStars = read $ filterComma (fromTagText (head counts !! 15))
