@@ -64,9 +64,9 @@ getCurrentCounts prox url = do
     tags   <- fmap parseTags $ getPage prox url
     tstamp <- getCurrentTime
     let counts       = partitions (~== "<div id=\"ullitags\"") tags
-    let confPlanets  = read $ filterComma (fromTagText (head counts !! 3))
-    let planCandits  = read $ filterComma (fromTagText (head counts !! 9))
-    let eclipBiStars = read $ filterComma (fromTagText (head counts !! 15))
+    let confPlanets  = read $ filter (/= ',') (fromTagText (head counts !! 3))
+    let planCandits  = read $ filter (/= ',') (fromTagText (head counts !! 9))
+    let eclipBiStars = read $ filter (/= ',') (fromTagText (head counts !! 15))
     return (AstroCounts tstamp confPlanets planCandits eclipBiStars)
 
 getPage :: Proxy -> String -> IO String
@@ -99,7 +99,4 @@ readOldCounts path = do
     let p = read $ lookupConfItem "planet_candidates" countItems
     let e = read $ lookupConfItem "eclipsing_binary_stars" countItems
     return (AstroCounts t c p e)
-
-filterComma :: String -> String
-filterComma = filter (/= ',')
 
