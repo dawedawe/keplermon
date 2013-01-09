@@ -32,7 +32,7 @@ data Options = Options {
 instance Show Options where
     show o =
       "-v " ++ show (optVerbose o) ++ "\n" ++
-      "-C " ++ optConfigPath o
+      "-c " ++ optConfigPath o
 
 defaultOptions :: FilePath -> Options
 defaultOptions p = Options {
@@ -45,7 +45,7 @@ options = [
       Option "v" ["verbose"]
       (NoArg (\optns -> optns { optVerbose = True }))
       "verbose output"
-    , Option "C" ["config"]
+    , Option "c" ["config"]
       (ReqArg (\p optns -> optns {optConfigPath = p }) "PATH")
       "filepath to config"
     ]
@@ -54,7 +54,7 @@ parseArgv :: [String] -> IO (Options, [String])
 parseArgv argv = do
     dDir       <- dotDirPath
     let opt    = getOpt RequireOrder options argv
-    let header = "Usage: keplermon [-v] [-C configpath]"
+    let header = "Usage: keplermon [-v] [-c configpath]"
     case opt of
           (o,n,[]  ) -> return (foldl (flip id) (defaultOptions dDir) o, n)
           (_,_,errs) -> ioError
