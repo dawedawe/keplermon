@@ -11,28 +11,31 @@ import qualified Data.ConfigFile as CF
 import Data.Either.Utils (forceEither)
 import Network.Browser
 import System.Console.GetOpt
+import System.Directory (getAppUserDataDirectory)
 
 data Conf = Conf {
             opts        :: Options
           , dataUrl     :: String
-          , dataPath    :: FilePath
           , proxy       :: Proxy
           }
 
 data Options = Options {
                optVerbose       :: Bool
              , optConfigPath    :: FilePath
+             , optDataPath      :: FilePath
              }
 
 instance Show Options where
     show o =
       "-v " ++ show (optVerbose o) ++ "\n" ++
-      "-C " ++ optConfigPath o
+      "-C " ++ optConfigPath o ++ "\n" ++
+      "-d " ++ optDataPath o
 
-defaultOptions :: Options
-defaultOptions = Options {
+defaultOptions :: FilePath -> Options
+defaultOptions p = Options {
       optVerbose    = False
-    , optConfigPath = "./.keplermon.conf"
+    , optConfigPath = p ++ "/keplermon.conf"
+    , optDataPath   = p ++ "/keplermon.conf"
     }
 
 options :: [OptDescr (Options -> Options)]
@@ -43,15 +46,18 @@ options = [
     , Option "C" ["config"]
       (ReqArg (\p optns -> optns {optConfigPath = p }) "PATH")
       "filepath to config"
+    , Option "d" ["data"]
+      (ReqArg (\p optns -> optns {optDataPath = p }) "PATH")
+      "filepath to data"
     ]
 
 parseArgv :: [String] -> IO (Options, [String]) 
-parseArgv argv =
-    let
-      opt    = getOpt RequireOrder options argv
-      header = "Usage: keplermon [-v] [-C configpath]"
-    in  case opt of
-          (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
+parseArgv argv = do
+    dDir       <- getAppUserDataDirectory "keplermon"
+    let opt    = getOpt RequireOrder options argv
+    let header = "Usage: keplermon [-v] [-C configpath] [-d datapath]"
+    case opt of
+          (o,n,[]  ) -> return (foldl (flip id) (defaultOptions dDir) o, n)
           (_,_,errs) -> ioError
             (userError (concat errs ++ usageInfo header options))
 
@@ -60,8 +66,7 @@ buildConf o = do
     items    <- getConfItems $ optConfigPath o
     let prx  = getProxyConf items
     let url  = lookupConfItem "url" items
-    let dat  = lookupConfItem "datapath" items
-    return $ Conf o url dat prx
+    return $ Conf o url prx
 
 getConfItems :: FilePath -> IO [(CF.OptionSpec, String)]
 getConfItems path = do

@@ -20,13 +20,14 @@ data AstroCounts = AstroCounts {
 
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
+    let dPath = optDataPath (opts conf)
     curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
-    initDataFileIfNeeded (dataPath conf) curCounts
-    oldCounts <- readOldCounts $ dataPath conf
+    initDataFileIfNeeded dPath curCounts
+    oldCounts <- readOldCounts dPath
     let diffs = diffOldNewCounts oldCounts curCounts
     let info  = appDiffsToCounts curCounts diffs
     putStrLn $ buildDisplayString (timeStamp oldCounts) info
-    writeCurrentCounts (dataPath conf) curCounts
+    writeCurrentCounts dPath curCounts
 
 buildDisplayString :: UTCTime -> [String] -> String
 buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
