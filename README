@@ -1,0 +1,23 @@
+1. Installation
+
+The easiest way to use keplermon is to install the haskell plattform and then use
+cabal to install keplermon:
+$ cabal install keplermon-x.y.tar.gz
+
+On first run keplermon will create a dot directory with a default config in your
+home directory.
+
+2. Usage
+
+-c filepath	    Use alternative filepath as the config file.
+
+-v              verbose output
+
+3. Examples
+
+$ keplermon    
+Confirmed Planets:      105     (0)
+Planet Candidates:      2740    (0)
+Eclipsing Binary Stars: 2165    (0)
+compared to old data from 2013-01-09 23:00:00.759715 UTC
+
