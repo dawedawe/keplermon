@@ -35,7 +35,7 @@ defaultOptions :: FilePath -> Options
 defaultOptions p = Options {
       optVerbose    = False
     , optConfigPath = p ++ "/keplermon.conf"
-    , optDataPath   = p ++ "/keplermon.conf"
+    , optDataPath   = p ++ "/keplermon.data"
     }
 
 options :: [OptDescr (Options -> Options)]
