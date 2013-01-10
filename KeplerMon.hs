@@ -24,8 +24,8 @@ getAndPrintCounts conf = do
     curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
     initDataFileIfNeeded dPath curCounts
     oldCounts <- readOldCounts dPath
-    let diffs = diffOldNewCounts oldCounts curCounts
-    let info  = appDiffsToCounts curCounts diffs
+    let diffs = diffCounts oldCounts curCounts
+    let info  = addDiffsToCounts curCounts diffs
     putStrLn $ buildDisplayString (timeStamp oldCounts) info
     writeCurrentCounts dPath curCounts
 
@@ -39,15 +39,17 @@ buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
                    "compared to old data from " ++ show oldTime
 buildDisplayString _ _ = error "undefined arguments for buildDisplayString"
 
-appDiffsToCounts :: AstroCounts -> [String] -> [String]
-appDiffsToCounts (AstroCounts _ cp pc ebs) =
+-- add diff strings to the stats of an AstroCounts
+addDiffsToCounts :: AstroCounts -> [String] -> [String]
+addDiffsToCounts (AstroCounts _ cp pc ebs) =
     zipWith helper [show cp, show pc, show ebs]
     where
       helper :: String -> String -> String
       helper x y = x ++ "\t" ++ y
 
-diffOldNewCounts :: AstroCounts -> AstroCounts -> [String]
-diffOldNewCounts old new =
+-- diff the stats of two AstroCounts
+diffCounts :: AstroCounts -> AstroCounts -> [String]
+diffCounts old new =
     map enrichDiff [cpdiff, pcdiff, ebsdiff]
     where
       cpdiff  = confirmedPlanets new - confirmedPlanets old
