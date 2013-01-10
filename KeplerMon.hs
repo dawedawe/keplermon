@@ -18,6 +18,7 @@ data AstroCounts = AstroCounts {
                  , eclipsingBiStars :: Int
                  }
 
+-- |Scrape the web page and print the stats to stdout.
 getAndPrintCounts :: Conf -> IO ()
 getAndPrintCounts conf = do
     let dPath = dataPath conf
@@ -39,7 +40,7 @@ buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
                    "compared to old data from " ++ show oldTime
 buildDisplayString _ _ = error "undefined arguments for buildDisplayString"
 
--- add diff strings to the stats of an AstroCounts
+-- |Add diff strings to the stats of an AstroCounts.
 addDiffsToCounts :: AstroCounts -> [String] -> [String]
 addDiffsToCounts (AstroCounts _ cp pc ebs) =
     zipWith helper [show cp, show pc, show ebs]
@@ -47,7 +48,7 @@ addDiffsToCounts (AstroCounts _ cp pc ebs) =
       helper :: String -> String -> String
       helper x y = x ++ "\t" ++ y
 
--- diff the stats of two AstroCounts
+-- |Diff the stats of two AstroCounts.
 diffCounts :: AstroCounts -> AstroCounts -> [String]
 diffCounts old new =
     map enrichDiff [cpdiff, pcdiff, ebsdiff]
