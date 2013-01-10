@@ -7,13 +7,15 @@ $ cabal install keplermon-x.y.tar.gz
 On first run keplermon will create a dot directory with a default config in your
 home directory.
 
-2. Usage
+2. Usage: keplermon [-c PATH | --config=PATH] [-v | --verbose]
 
--c filepath	    Use alternative filepath as the config file.
+-c PATH, --config=PATH
+                Use alternative PATH as config file.
 
--v              verbose output
+-v, --VERBOSE
+               verbose output
 
-3. Examples
+3. Example
 
 $ keplermon    
 Confirmed Planets:      105     (0)
