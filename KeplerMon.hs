@@ -28,7 +28,7 @@ getAndPrintCounts conf = do
     let diffs = diffCounts oldCounts curCounts
     let info  = addDiffsToCounts curCounts diffs
     putStrLn $ buildDisplayString (timeStamp oldCounts) info
-    writeCurrentCounts dPath curCounts
+    writeCounts dPath curCounts
 
 buildDisplayString :: UTCTime -> [String] -> String
 buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
@@ -80,13 +80,14 @@ getPage prox url = do
       request (getRequest url)
     return (rspBody rsp)
 
+-- |Write counts to path if it doesn't exists already.
 initDataFileIfNeeded :: FilePath -> AstroCounts -> IO ()
 initDataFileIfNeeded path counts = do
     e <- doesFileExist path
-    unless e (writeCurrentCounts path counts)
+    unless e (writeCounts path counts)
 
-writeCurrentCounts :: FilePath -> AstroCounts -> IO ()
-writeCurrentCounts path (AstroCounts ts cp pc ebs) = do
+writeCounts :: FilePath -> AstroCounts -> IO ()
+writeCounts path (AstroCounts ts cp pc ebs) = do
     let countString =
          "timestamp = " ++ show ts ++ "\n" ++
          "confirmed_planets = " ++ show  cp ++ "\n" ++
