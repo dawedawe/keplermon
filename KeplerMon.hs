@@ -1,5 +1,7 @@
 module KeplerMon (
-  getAndPrintCounts
+  AstroCounts (..)
+, getAndPrintCounts
+, getCurrentCounts
 ) where
 
 import Control.Monad (unless)
@@ -30,14 +32,13 @@ getAndPrintCounts conf = do
     putStrLn $ buildDisplayString (timeStamp oldCounts) info
     writeCounts dPath curCounts
 
+-- | Build a string for displaying purposes of the counts and the diffs.
 buildDisplayString :: UTCTime -> [String] -> String
 buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
-    dispString
-    where
-      dispString = "Confirmed Planets:      " ++ countdiff0 ++ "\n" ++
-                   "Planet Candidates:      " ++ countdiff1 ++ "\n" ++
-                   "Eclipsing Binary Stars: " ++ countdiff2 ++ "\n" ++
-                   "compared to old data from " ++ show oldTime
+    "Confirmed Planets:      " ++ countdiff0 ++ "\n" ++
+    "Planet Candidates:      " ++ countdiff1 ++ "\n" ++
+    "Eclipsing Binary Stars: " ++ countdiff2 ++ "\n" ++
+    "compared to old data from " ++ show oldTime
 buildDisplayString _ _ = error "undefined arguments for buildDisplayString"
 
 -- |Add diff strings to the stats of an AstroCounts.
@@ -62,6 +63,7 @@ enrichDiff n
     | n > 0     = "(+" ++ show n ++ ")"
     | otherwise = "(" ++ show n ++ ")"
 
+-- | Use proxy or not to scrape the counts from the page at the given url.
 getCurrentCounts :: Proxy -> String -> IO AstroCounts
 getCurrentCounts prox url = do
     tags   <- fmap parseTags $ getPage prox url
