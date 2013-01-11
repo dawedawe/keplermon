@@ -26,13 +26,13 @@ getAndPrintCounts conf = do
     let dPath = dataPath conf
     curCounts <- getCurrentCounts (proxy conf) (dataUrl conf)
     initDataFileIfNeeded dPath curCounts
-    oldCounts <- readOldCounts dPath
+    oldCounts <- readCounts dPath
     let diffs = diffCounts oldCounts curCounts
     let info  = addDiffsToCounts curCounts diffs
     putStrLn $ buildDisplayString (timeStamp oldCounts) info
     writeCounts dPath curCounts
 
--- | Build a string for displaying purposes of the counts and the diffs.
+-- |Build a string for displaying purposes of the counts and the diffs.
 buildDisplayString :: UTCTime -> [String] -> String
 buildDisplayString oldTime [countdiff0, countdiff1, countdiff2] =
     "Confirmed Planets:      " ++ countdiff0 ++ "\n" ++
@@ -63,7 +63,7 @@ enrichDiff n
     | n > 0     = "(+" ++ show n ++ ")"
     | otherwise = "(" ++ show n ++ ")"
 
--- | Use proxy or not to scrape the counts from the page at the given url.
+-- |Use proxy or not to scrape the counts from the page at the given url.
 getCurrentCounts :: Proxy -> String -> IO AstroCounts
 getCurrentCounts prox url = do
     tags   <- fmap parseTags $ getPage prox url
@@ -88,17 +88,18 @@ initDataFileIfNeeded path counts = do
     e <- doesFileExist path
     unless e (writeCounts path counts)
 
+-- |Write a name = value file with the given counts.
 writeCounts :: FilePath -> AstroCounts -> IO ()
-writeCounts path (AstroCounts ts cp pc ebs) = do
-    let countString =
-         "timestamp = " ++ show ts ++ "\n" ++
-         "confirmed_planets = " ++ show  cp ++ "\n" ++
-         "planet_candidates = " ++ show  pc ++ "\n" ++
-         "eclipsing_binary_stars = " ++ show ebs ++ "\n"
-    writeFile path countString
+writeCounts path (AstroCounts ts cp pc ebs) =
+    let countString = "timestamp = " ++ show ts ++ "\n" ++
+                      "confirmed_planets = " ++ show  cp ++ "\n" ++
+                      "planet_candidates = " ++ show  pc ++ "\n" ++
+                      "eclipsing_binary_stars = " ++ show ebs ++ "\n"
+    in writeFile path countString
 
-readOldCounts :: FilePath -> IO AstroCounts
-readOldCounts path = do
+-- |Parse a name = value file to an AstroCounts
+readCounts :: FilePath -> IO AstroCounts
+readCounts path = do
     countItems <- getConfItems path
     let t = read $ lookupConfItem "timestamp" countItems
     let c = read $ lookupConfItem "confirmed_planets" countItems
