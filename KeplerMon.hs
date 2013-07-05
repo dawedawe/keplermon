@@ -68,10 +68,10 @@ getCurrentCounts :: Proxy -> String -> IO AstroCounts
 getCurrentCounts prox url = do
     tags   <- fmap parseTags $ getPage prox url
     tstamp <- getCurrentTime
-    let counts       = partitions (~== "<div id=\"ullitags\"") tags
-    let confPlanets  = read $ filter (/= ',') (fromTagText (head counts !! 3))
-    let planCandits  = read $ filter (/= ',') (fromTagText (head counts !! 9))
-    let eclipBiStars = read $ filter (/= ',') (fromTagText (head counts !! 15))
+    let counts       = partitions (~== TagText "Confirmed Planets: ") tags
+    let confPlanets  = read $ filter (/= ',') (fromTagText (head counts !! 2))
+    let planCandits  = read $ filter (/= ',') (fromTagText (head counts !! 8))
+    let eclipBiStars = read $ filter (/= ',') (fromTagText (head counts !! 14))
     return (AstroCounts tstamp confPlanets planCandits eclipBiStars)
 
 getPage :: Proxy -> String -> IO String
